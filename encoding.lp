@@ -19,7 +19,7 @@ position(ID, (X,Y), Dir, 0) :- start(ID, (X,Y), Dep, Dir).
 
 % generate new position after action
 % added cell((X,Y), _) <- cell@X,Y exists; to make sure we're not going out of bounds (shouldnt be needed in a viable environment)
-% TODO: exclude curve track types when moving forward
+% TODO: exclude ANY type of curved track types when moving forward
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), n, T-1), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_left, T-1), position(ID, (X+1,Y), e, T-1), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_right, T-1), position(ID, (X+1,Y), w, T-1), cell((X,Y), _).
@@ -38,6 +38,7 @@ position(ID, (X,Y), w, T) :- action(ID, move_right, T-1), position(ID, (X,Y+1), 
 position(ID, (X,Y), w, T) :- action(ID, wait, T-1), position(ID, (X,Y), w, T-1).
 
 % special case Type #1 curves
+% TODO: add other cases with curves and move_forward (switches from behind)
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 4608), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), e, T-1), cell((X-1,Y), 4608), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), n, T-1), cell((X,Y-1), 16386), cell((X,Y), _).
@@ -194,9 +195,11 @@ possible_movement(6672, s, move_forward).
 % no two trains on the same cell
 :- position(ID1, (X,Y), Dir1, T), position(ID2, (X,Y), Dir2, T), ID1 != ID2.
 
-% no trains skiping over each other
+% no trains skiping over each other (untested)
+%:- position(ID1, (X,Y), _, T), position(ID2, (A,B), _, T), position(ID1, (A,B), _, T+1), position(ID2, (X,Y), _, T+1).
 
-% trains have to arrive in time
+% trains have to arrive in time (maybe redundant with shortest path constraint)(untested)
+%:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
 
 % every train has to reach end
 :- end(ID, (X,Y), _), not position(ID, (X,Y), _, _).

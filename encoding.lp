@@ -1,3 +1,7 @@
+cell((0,0), 16386). cell((0,1), 5633). cell((0,2), 1025). 
+cell((1,0), 72). cell((1,1), 2064). cell((1,2), 0).
+
+%*
 % environment0
 cell((0,0),16386).
 cell((0,1),20994).
@@ -6,36 +10,43 @@ cell((1,0),32800).
 cell((1,1),32800).
 cell((1,2),32800).
 cell((2,0),72).
-cell((2,1),2136).
-cell((2,2),2064).
+%cell((2,1),2136).
+cell((2,2),2064). *%
 
 train(1).
-start(1,(1,0),0,n).
-end(1,(1,2),20).
-
+start(1,(0,0),0,n).
+end(1,(0,2),20).
+max_end_time(ID,E) :- end(ID,(_,_),E).
 % init position
 % fact format: position(train ID, coordinates, facing direction, timestep)
 position(ID, (X,Y), Dir, 0) :- start(ID, (X,Y), Dep, Dir).
+curve(X,Y) :- cell((X,Y),72).
+curve(X,Y) :- cell((X,Y),4608).
+curve(X,Y) :- cell((X,Y),16386).
+curve(X,Y) :- cell((X,Y),2064).
+special_track(X,Y) :- cell((X,Y),20994).
+
+%step_count(ID, N) :- train(ID),N = * { T : position(ID, (_,_), _, T)}.
+end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
 
 % generate new position after action
 % added cell((X,Y), _) <- cell@X,Y exists; to make sure we're not going out of bounds (shouldnt be needed in a viable environment)
-% TODO: exclude ANY type of curved track types when moving forward
-position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), n, T-1), cell((X,Y), _).
+position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), n, T-1), not curve(X+1,Y), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_left, T-1), position(ID, (X+1,Y), e, T-1), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_right, T-1), position(ID, (X+1,Y), w, T-1), cell((X,Y), _).
-position(ID, (X,Y), n, T) :- action(ID, wait, T-1), position(ID, (X,Y), n, T-1).
-position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), e, T-1), cell((X,Y), _).
+%position(ID, (X,Y), n, T) :- action(ID, wait, T-1), position(ID, (X,Y), n, T-1).
+position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), e, T-1), not curve(X,Y-1), not special_track(X,Y-1), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(ID, move_left, T-1), position(ID, (X,Y-1), s, T-1), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(ID, move_right, T-1), position(ID, (X,Y-1), n, T-1), cell((X,Y), _).
-position(ID, (X,Y), e, T) :- action(ID, wait, T-1), position(ID, (X,Y), e, T-1).
-position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), s, T-1), cell((X,Y), _).
+%position(ID, (X,Y), e, T) :- action(ID, wait, T-1), position(ID, (X,Y), e, T-1).
+position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), s, T-1), not curve(X+1,Y), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_left, T-1), position(ID, (X-1,Y), w, T-1), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_right, T-1), position(ID, (X-1,Y), e, T-1), cell((X,Y), _).
-position(ID, (X,Y), s, T) :- action(ID, wait, T-1), position(ID, (X,Y), s, T-1).
-position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), w, T-1), cell((X,Y), _).
+%position(ID, (X,Y), s, T) :- action(ID, wait, T-1), position(ID, (X,Y), s, T-1).
+position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), w, T-1), not curve(X+1,Y), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_left, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_right, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y), _).
-position(ID, (X,Y), w, T) :- action(ID, wait, T-1), position(ID, (X,Y), w, T-1).
+%position(ID, (X,Y), w, T) :- action(ID, wait, T-1), position(ID, (X,Y), w, T-1).
 
 % special case Type #1 curves
 % TODO: add other cases with curves and move_forward (switches from behind)
@@ -47,7 +58,15 @@ position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1)
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), w, T-1), cell((X+1,Y), 72), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y+1), 2064), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), e, T-1), cell((X+1,Y), 2064), cell((X,Y), _).
+% new for 20994
+position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), e, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
+%position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), w, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
+% new for 2136
+position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), e, T-1), cell((X+1,Y), 2136), cell((X,Y), _).
+position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), w, T-1), cell((X+1,Y), 2136), cell((X,Y), _).
 
+
+% Track Type 2 ToDO
 
 % possible movements on any track type depending on direction
 % fact format: possible_movement(ID of track type, direction coming in, possible action).
@@ -188,19 +207,26 @@ possible_movement(6672, e, move_right).
 possible_movement(6672, n, move_forward).
 possible_movement(6672, s, move_forward).
 
-{action(ID, Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _).
+{action(ID, Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < E.
 
-% only shortest path
+% minimize time
+#minimize { T : end_time(ID, T) }.
+
+% shortest path only
+:~ end_time(ID, T). [T@1]
+
+% trains may not swap
+%:- position(ID1, (X1,Y1), _, T), position(ID2, (X2,Y2), _, T), position(ID1, (X2,Y2), _, T+1), position(ID2, (X1,Y1), _, T+1).
 
 % no two trains on the same cell
-:- position(ID1, (X,Y), Dir1, T), position(ID2, (X,Y), Dir2, T), ID1 != ID2.
-
-% no trains skiping over each other (untested)
-%:- position(ID1, (X,Y), _, T), position(ID2, (A,B), _, T), position(ID1, (A,B), _, T+1), position(ID2, (X,Y), _, T+1).
-
-% trains have to arrive in time (maybe redundant with shortest path constraint)(untested)
-%:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
+:- position(ID1, (X,Y), Dir1, T), position(ID2, (X,Y), Dir2, T), ID1 != ID2
 
 % every train has to reach end
 :- end(ID, (X,Y), _), not position(ID, (X,Y), _, _).
+
+% trains have to be on time
+%:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
+
+
 #show action/3.
+#show position/4.

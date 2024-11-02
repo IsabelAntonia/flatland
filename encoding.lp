@@ -1,7 +1,7 @@
-cell((0,0), 16386). cell((0,1), 5633). cell((0,2), 1025). 
-cell((1,0), 72). cell((1,1), 2064). cell((1,2), 0).
+%* cell((0,0), 16386). cell((0,1), 5633). cell((0,2), 1025). 
+cell((1,0), 72). cell((1,1), 2064). cell((1,2), 0). *%
 
-%*
+
 % environment0
 cell((0,0),16386).
 cell((0,1),20994).
@@ -10,12 +10,17 @@ cell((1,0),32800).
 cell((1,1),32800).
 cell((1,2),32800).
 cell((2,0),72).
-%cell((2,1),2136).
-cell((2,2),2064). *%
+cell((2,1),2136).
+cell((2,2),2064).
 
 train(1).
-start(1,(0,0),0,n).
-end(1,(0,2),20).
+start(1,(1,0),0,n).
+end(1,(1,2),10).
+
+train(2).
+start(2,(1,2),0,e).
+end(2,(1,0),10).
+
 max_end_time(ID,E) :- end(ID,(_,_),E).
 % init position
 % fact format: position(train ID, coordinates, facing direction, timestep)
@@ -39,11 +44,11 @@ position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1)
 position(ID, (X,Y), e, T) :- action(ID, move_left, T-1), position(ID, (X,Y-1), s, T-1), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(ID, move_right, T-1), position(ID, (X,Y-1), n, T-1), cell((X,Y), _).
 %position(ID, (X,Y), e, T) :- action(ID, wait, T-1), position(ID, (X,Y), e, T-1).
-position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), s, T-1), not curve(X+1,Y), cell((X,Y), _).
+position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), s, T-1), not curve(X-1,Y), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_left, T-1), position(ID, (X-1,Y), w, T-1), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_right, T-1), position(ID, (X-1,Y), e, T-1), cell((X,Y), _).
 %position(ID, (X,Y), s, T) :- action(ID, wait, T-1), position(ID, (X,Y), s, T-1).
-position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), w, T-1), not curve(X+1,Y), cell((X,Y), _).
+position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), w, T-1), not curve(X,Y+1), not special_track(X,Y+1),  cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_left, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_right, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y), _).
 %position(ID, (X,Y), w, T) :- action(ID, wait, T-1), position(ID, (X,Y), w, T-1).
@@ -58,12 +63,21 @@ position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1)
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), w, T-1), cell((X+1,Y), 72), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y+1), 2064), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), e, T-1), cell((X+1,Y), 2064), cell((X,Y), _).
-% new for 20994
+% symmetrical switches
+% 20994
 position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), e, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
-%position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), w, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
-% new for 2136
+position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), w, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
+% 2136
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), e, T-1), cell((X+1,Y), 2136), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), w, T-1), cell((X+1,Y), 2136), cell((X,Y), _).
+% 16458
+position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), s, T-1), cell((X,Y-1), 16458), cell((X,Y), _).
+position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), n, T-1), cell((X,Y-1), 16458), cell((X,Y), _).
+% 6672
+position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y+1), 6672), cell((X,Y), _).
+position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 6672), cell((X,Y), _).
+
+% 8 Simple Switch
 
 
 % Track Type 2 ToDO
@@ -213,13 +227,13 @@ possible_movement(6672, s, move_forward).
 #minimize { T : end_time(ID, T) }.
 
 % shortest path only
-:~ end_time(ID, T). [T@1]
+%:~ end_time(ID, T). [T@1]
 
 % trains may not swap
-%:- position(ID1, (X1,Y1), _, T), position(ID2, (X2,Y2), _, T), position(ID1, (X2,Y2), _, T+1), position(ID2, (X1,Y1), _, T+1).
+:- position(ID1, (X1,Y1), _, T), position(ID2, (X2,Y2), _, T), position(ID1, (X2,Y2), _, T+1), position(ID2, (X1,Y1), _, T+1).
 
 % no two trains on the same cell
-:- position(ID1, (X,Y), Dir1, T), position(ID2, (X,Y), Dir2, T), ID1 != ID2
+:- position(ID1, (X,Y), Dir1, T), position(ID2, (X,Y), Dir2, T), ID1 != ID2.
 
 % every train has to reach end
 :- end(ID, (X,Y), _), not position(ID, (X,Y), _, _).
@@ -229,4 +243,4 @@ possible_movement(6672, s, move_forward).
 
 
 #show action/3.
-#show position/4.
+%#show position/4.

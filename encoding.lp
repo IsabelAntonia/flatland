@@ -63,7 +63,8 @@ position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1)
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), w, T-1), cell((X+1,Y), 72), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y+1), 2064), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), e, T-1), cell((X+1,Y), 2064), cell((X,Y), _).
-% symmetrical switches
+
+% Symmetrical Switches
 % 20994
 position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), e, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), w, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
@@ -77,10 +78,23 @@ position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1)
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y+1), 6672), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 6672), cell((X,Y), _).
 
-% 8 Simple Switch
-
-
-% Track Type 2 ToDO
+% Simple Switches
+% 37408
+position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), e, T-1), cell((X-1,Y), 37408), cell((X,Y), _).
+% 17411
+position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), n, T-1), cell((X,Y-1), 17411), cell((X,Y), _).
+% 32872
+position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), w, T-1), cell((X+1,Y), 32872), cell((X,Y), _).
+% 3089
+position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y+1), 3089), cell((X,Y), _).
+% 49186
+position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), w, T-1), cell((X-1,Y), 49186), cell((X,Y), _).
+% 1097
+position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), s, T-1), cell((X,Y-1), 1097), cell((X,Y), _).
+% 34864
+position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), e, T-1), cell((X+1,Y), 34864), cell((X,Y), _).
+% 5633
+position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 5633), cell((X,Y), _).
 
 % possible movements on any track type depending on direction
 % fact format: possible_movement(ID of track type, direction coming in, possible action).

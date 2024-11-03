@@ -11,7 +11,6 @@ cell((1,0), 72). cell((1,1), 2064). cell((1,2), 0). *%
 % cell((2,1),2136).
 % cell((2,2),2064).
 
-
 % train(1).
 % start(1,(1,0),0,n).
 % end(1,(1,2),20).
@@ -46,19 +45,19 @@ end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
 
 % generate new position after action
 % added cell((X,Y), _) <- cell@X,Y exists; to make sure we're not going out of bounds (shouldnt be needed in a viable environment)
-position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), n, T-1), not curve(X+1,Y), not symmetrical_switch(X+1,Y), not simple_switch(X+1,Y), cell((X,Y), _).
+position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), n, T-1), not curve(X+1,Y), not symmetrical_switch(X+1,Y), not cell((X+1,Y),5633), not cell((X+1,Y),17411), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_left, T-1), position(ID, (X+1,Y), e, T-1), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_right, T-1), position(ID, (X+1,Y), w, T-1), cell((X,Y), _).
 %position(ID, (X,Y), n, T) :- action(ID, wait, T-1), position(ID, (X,Y), n, T-1).
-position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), e, T-1), not curve(X,Y-1), not symmetrical_switch(X,Y-1), not simple_switch(X,Y-1), cell((X,Y), _).
+position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), e, T-1), not curve(X,Y-1), not symmetrical_switch(X,Y-1), not cell((X,Y-1),34864), not cell((X,Y-1),37408), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(ID, move_left, T-1), position(ID, (X,Y-1), s, T-1), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(ID, move_right, T-1), position(ID, (X,Y-1), n, T-1), cell((X,Y), _).
 %position(ID, (X,Y), e, T) :- action(ID, wait, T-1), position(ID, (X,Y), e, T-1).
-position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), s, T-1), not curve(X-1,Y), not symmetrical_switch(X-1,Y), not simple_switch(X-1,Y), cell((X,Y), _).
+position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), s, T-1), not curve(X-1,Y), not symmetrical_switch(X-1,Y), not cell((X-1,Y),1097), not cell((X-1,Y),3089), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_left, T-1), position(ID, (X-1,Y), w, T-1), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_right, T-1), position(ID, (X-1,Y), e, T-1), cell((X,Y), _).
 %position(ID, (X,Y), s, T) :- action(ID, wait, T-1), position(ID, (X,Y), s, T-1).
-position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), w, T-1), not curve(X,Y+1), not symmetrical_switch(X,Y+1), not simple_switch(X,Y+1), cell((X,Y), _).
+position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), w, T-1), not curve(X,Y+1), not symmetrical_switch(X,Y+1), not cell((X,Y+1),49186), not cell((X,Y+1),32872), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_left, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_right, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y), _).
 %position(ID, (X,Y), w, T) :- action(ID, wait, T-1), position(ID, (X,Y), w, T-1).
@@ -266,5 +265,5 @@ possible_movement(6672, s, move_forward).
 %:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
 
 
-%#show action/3.
-#show position/4.
+#show action/3.
+%#show position/4.

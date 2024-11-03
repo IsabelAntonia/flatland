@@ -1,46 +1,46 @@
-%* cell((0,0), 16386). cell((0,1), 5633). cell((0,2), 1025). 
-cell((1,0), 72). cell((1,1), 2064). cell((1,2), 0). *%
+%* 
+cell((0,0), 16386). cell((0,1), 5633). cell((0,2), 1025). 
+cell((1,0), 72). cell((1,1), 2064). cell((1,2), 0). 
 
-% cell((0,0),16386).
-% cell((0,1),20994).
-% cell((0,2),4608).
-% cell((1,0),32800).
-% cell((1,1),32800).
-% cell((1,2),32800).
-% cell((2,0),72).
-% cell((2,1),2136).
-% cell((2,2),2064).
+cell((0,0),16386).
+cell((0,1),20994).
+cell((0,2),4608).
+cell((1,0),32800).
+cell((1,1),32800).
+cell((1,2),32800).
+cell((2,0),72).
+cell((2,1),2136).
+cell((2,2),2064).
 
-% train(1).
-% start(1,(1,0),0,n).
-% end(1,(1,2),20).
+train(1).
+start(1,(1,0),0,n).
+end(1,(1,2),20).
 
-% train(2).
-% start(2,(1,2),0,e).
-% end(2,(1,0),10).
+train(2).
+start(2,(1,2),0,e).
+end(2,(1,0),10).
+*%
 
-max_end_time(ID,E) :- end(ID,(_,_),E).
-% init position
 % fact format: position(train ID, coordinates, facing direction, timestep)
+% init position
 position(ID, (X,Y), Dir, 0) :- start(ID, (X,Y), Dep, Dir).
+
+% curves
 curve(X,Y) :- cell((X,Y),72).
 curve(X,Y) :- cell((X,Y),4608).
 curve(X,Y) :- cell((X,Y),16386).
 curve(X,Y) :- cell((X,Y),2064).
+
+% symmetrical switches
 symmetrical_switch(X,Y) :- cell((X,Y),20994).
 symmetrical_switch(X,Y) :- cell((X,Y),16458).
 symmetrical_switch(X,Y) :- cell((X,Y),2136).
 symmetrical_switch(X,Y) :- cell((X,Y),6672).
-simple_switch(X,Y) :- cell((X,Y),37408).
-simple_switch(X,Y) :- cell((X,Y),17411).
-simple_switch(X,Y) :- cell((X,Y),32872).
-simple_switch(X,Y) :- cell((X,Y),3089).
-simple_switch(X,Y) :- cell((X,Y),49186).
-simple_switch(X,Y) :- cell((X,Y),1097).
-simple_switch(X,Y) :- cell((X,Y),34864).
-simple_switch(X,Y) :- cell((X,Y),5633).
 
-%step_count(ID, N) :- train(ID),N = * { T : position(ID, (_,_), _, T)}.
+% latest arrival time of train
+max_end_time(ID,E) :- end(ID,(_,_),E).
+
+% arrival time of train
 end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
 
 % generate new position after action
@@ -63,7 +63,6 @@ position(ID, (X,Y), w, T) :- action(ID, move_right, T-1), position(ID, (X,Y+1), 
 %position(ID, (X,Y), w, T) :- action(ID, wait, T-1), position(ID, (X,Y), w, T-1).
 
 % special case Type #1 curves
-% TODO: add other cases with curves and move_forward (switches from behind)
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 4608), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), e, T-1), cell((X-1,Y), 4608), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1), n, T-1), cell((X,Y-1), 16386), cell((X,Y), _).
@@ -73,7 +72,7 @@ position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y)
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y+1), 2064), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(ID, move_forward, T-1), position(ID, (X+1,Y), e, T-1), cell((X+1,Y), 2064), cell((X,Y), _).
 
-% Symmetrical Switches
+% special case Type #6: symmetrical switches
 % 20994
 position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), e, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), w, T-1), cell((X-1,Y), 20994), cell((X,Y), _).
@@ -87,7 +86,7 @@ position(ID, (X,Y), e, T) :- action(ID, move_forward, T-1), position(ID, (X,Y-1)
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y+1), 6672), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(ID, move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 6672), cell((X,Y), _).
 
-% Simple Switches
+% special case Type #2: simple switches
 % 37408
 position(ID, (X,Y), s, T) :- action(ID, move_forward, T-1), position(ID, (X-1,Y), e, T-1), cell((X-1,Y), 37408), cell((X,Y), _).
 % 17411
@@ -247,7 +246,7 @@ possible_movement(6672, s, move_forward).
 {action(ID, Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < E.
 
 % minimize time
-#minimize { T : end_time(ID, T) }.
+%#minimize { T : end_time(ID, T) }.
 
 % shortest path only
 %:~ end_time(ID, T). [T@1]
@@ -265,5 +264,5 @@ possible_movement(6672, s, move_forward).
 %:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
 
 
-#show action/3.
-%#show position/4.
+%#show action/3.
+#show position/4.

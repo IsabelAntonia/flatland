@@ -23,7 +23,7 @@ end(2,(1,0),10).
 
 % fact format: position(train ID, coordinates, facing direction, timestep)
 % init position
-position(ID, (X,Y), Dir, 0) :- start(ID, (X,Y), Dep, Dir).
+position(ID, (X,Y), Dir, Dep) :- start(ID, (X,Y), Dep, Dir).
 
 % curves
 curve(X,Y) :- cell((X,Y),72).
@@ -48,19 +48,19 @@ end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
 position(ID, (X,Y), n, T) :- action(train(ID), move_forward, T-1), position(ID, (X+1,Y), n, T-1), not curve(X+1,Y), not symmetrical_switch(X+1,Y), not cell((X+1,Y),5633), not cell((X+1,Y),17411), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(train(ID), move_left, T-1), position(ID, (X+1,Y), e, T-1), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(train(ID), move_right, T-1), position(ID, (X+1,Y), w, T-1), cell((X,Y), _).
-%position(ID, (X,Y), n, T) :- action(train(ID), wait, T-1), position(ID, (X,Y), n, T-1).
+position(ID, (X,Y), n, T) :- action(train(ID), wait, T-1), position(ID, (X,Y), n, T-1).
 position(ID, (X,Y), e, T) :- action(train(ID), move_forward, T-1), position(ID, (X,Y-1), e, T-1), not curve(X,Y-1), not symmetrical_switch(X,Y-1), not cell((X,Y-1),34864), not cell((X,Y-1),37408), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(train(ID), move_left, T-1), position(ID, (X,Y-1), s, T-1), cell((X,Y), _).
 position(ID, (X,Y), e, T) :- action(train(ID), move_right, T-1), position(ID, (X,Y-1), n, T-1), cell((X,Y), _).
-%position(ID, (X,Y), e, T) :- action(train(ID), wait, T-1), position(ID, (X,Y), e, T-1).
+position(ID, (X,Y), e, T) :- action(train(ID), wait, T-1), position(ID, (X,Y), e, T-1).
 position(ID, (X,Y), s, T) :- action(train(ID), move_forward, T-1), position(ID, (X-1,Y), s, T-1), not curve(X-1,Y), not symmetrical_switch(X-1,Y), not cell((X-1,Y),1097), not cell((X-1,Y),3089), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(train(ID), move_left, T-1), position(ID, (X-1,Y), w, T-1), cell((X,Y), _).
 position(ID, (X,Y), s, T) :- action(train(ID), move_right, T-1), position(ID, (X-1,Y), e, T-1), cell((X,Y), _).
-%position(ID, (X,Y), s, T) :- action(train(ID), wait, T-1), position(ID, (X,Y), s, T-1).
+position(ID, (X,Y), s, T) :- action(train(ID), wait, T-1), position(ID, (X,Y), s, T-1).
 position(ID, (X,Y), w, T) :- action(train(ID), move_forward, T-1), position(ID, (X,Y+1), w, T-1), not curve(X,Y+1), not symmetrical_switch(X,Y+1), not cell((X,Y+1),49186), not cell((X,Y+1),32872), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(train(ID), move_left, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y), _).
 position(ID, (X,Y), w, T) :- action(train(ID), move_right, T-1), position(ID, (X,Y+1), s, T-1), cell((X,Y), _).
-%position(ID, (X,Y), w, T) :- action(train(ID), wait, T-1), position(ID, (X,Y), w, T-1).
+position(ID, (X,Y), w, T) :- action(train(ID), wait, T-1), position(ID, (X,Y), w, T-1).
 
 % special case Type #1 curves
 position(ID, (X,Y), w, T) :- action(train(ID), move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 4608), cell((X,Y), _).
@@ -109,6 +109,7 @@ position(ID, (X,Y), w, T) :- action(train(ID), move_forward, T-1), position(ID, 
 % Type #1: straight tracks
 possible_movement(32800, n, move_forward).
 possible_movement(32800, s, move_forward).
+possible_movement(32800, s, wait).
 
 possible_movement(1025, e, move_forward).
 possible_movement(1025, w, move_forward).
@@ -243,10 +244,16 @@ possible_movement(6672, e, move_right).
 possible_movement(6672, n, move_forward).
 possible_movement(6672, s, move_forward).
 
+% wait as possible_movement on any track type
+possible_movement(TrackID, n, wait) :- cell(_, TrackID).
+possible_movement(TrackID, e, wait) :- cell(_, TrackID).
+possible_movement(TrackID, s, wait) :- cell(_, TrackID).
+possible_movement(TrackID, w, wait) :- cell(_, TrackID). 
+
 {action(train(ID), Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < E.
 
 % minimize time
-#minimize { T : end_time(ID, T) }.
+%#minimize { T : end_time(ID, T) }.
 
 % shortest path only
 %:~ end_time(ID, T). [T@1]
@@ -266,3 +273,4 @@ possible_movement(6672, s, move_forward).
 
 #show action/3.
 %#show position/4.
+%#show possible_movement/3.

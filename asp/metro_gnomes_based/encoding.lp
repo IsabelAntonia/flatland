@@ -21,6 +21,25 @@ start(2,(1,2),0,e).
 end(2,(1,0),10).
 *%
 
+cell((0,0), 0).
+cell((0,1), 0).
+cell((0,2), 16386).
+cell((0,3), 4608).
+cell((1,0), 16386).
+cell((1,1), 17411).
+cell((1,2), 3089).
+cell((1,3), 2064).
+cell((2,0), 72).
+cell((2,1), 2064).
+cell((2,2), 0).
+cell((2,3), 0).
+train(1).
+start(1,(2,1),0,e).
+end(1,(0,2),20).
+train(2).
+start(2,(0,2),0,w).
+end(2,(2,1),20).
+
 % fact format: position(train ID, coordinates, facing direction, timestep)
 % init position
 position(ID, (X,Y), Dir, 0) :- start(ID, (X,Y), Dep, Dir).
@@ -252,7 +271,7 @@ possible_movement(6672, s, move_forward).
 %:~ end_time(ID, T). [T@1]
 
 % trains may not swap
-:- position(ID1, (X1,Y1), _, T), position(ID2, (X2,Y2), _, T), position(ID1, (X2,Y2), _, T+1), position(ID2, (X1,Y1), _, T+1).
+%:- position(ID1, (X1,Y1), _, T), position(ID2, (X2,Y2), _, T), position(ID1, (X2,Y2), _, T+1), position(ID2, (X1,Y1), _, T+1).
 
 % no two trains on the same cell
 :- position(ID1, (X,Y), Dir1, T), position(ID2, (X,Y), Dir2, T), ID1 != ID2.
@@ -264,5 +283,5 @@ possible_movement(6672, s, move_forward).
 %:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
 
 
-%#show action/3.
-#show position/4.
+#show action/3.
+%#show position/4.

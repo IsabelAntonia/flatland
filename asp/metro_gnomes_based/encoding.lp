@@ -23,7 +23,7 @@ end(2,(1,0),10).
 
 % fact format: position(train ID, coordinates, facing direction, timestep)
 % init position
-position(ID, (X,Y), Dir, 0) :- start(ID, (X,Y), Dep, Dir).
+position(ID, (X,Y), Dir, Dep+1) :- start(ID, (X,Y), Dep, Dir).
 
 % curves
 curve(X,Y) :- cell((X,Y),72).
@@ -39,6 +39,9 @@ symmetrical_switch(X,Y) :- cell((X,Y),6672).
 
 % latest arrival time of train
 max_end_time(ID,E) :- end(ID,(_,_),E).
+
+% spawning action
+action(train(ID), move_forward, Dep) :- start(ID, (X,Y), Dep, Dir).
 
 % arrival time of train
 end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
@@ -246,7 +249,7 @@ possible_movement(6672, s, move_forward).
 {action(train(ID), Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < E.
 
 % minimize time
-#minimize { T : end_time(ID, T) }.
+%#minimize { T : end_time(ID, T) }.
 
 % shortest path only
 %:~ end_time(ID, T). [T@1]
@@ -265,4 +268,4 @@ possible_movement(6672, s, move_forward).
 
 
 #show action/3.
-%#show position/4.
+#show position/4.

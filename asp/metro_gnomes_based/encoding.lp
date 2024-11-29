@@ -1,29 +1,15 @@
-%* 
-cell((0,0), 16386). cell((0,1), 5633). cell((0,2), 1025). 
-cell((1,0), 72). cell((1,1), 2064). cell((1,2), 0). 
+% idle waiting
+action(train(ID), wait, 0) :- train(ID).
+action(train(ID), wait, 0..Dep-1) :- start(ID,(_,_),Dep,Dir), Dep > 0.
 
-cell((0,0),16386).
-cell((0,1),20994).
-cell((0,2),4608).
-cell((1,0),32800).
-cell((1,1),32800).
-cell((1,2),32800).
-cell((2,0),72).
-cell((2,1),2136).
-cell((2,2),2064).
-
-train(1).
-start(1,(1,0),0,n).
-end(1,(1,2),20).
-
-train(2).
-start(2,(1,2),0,e).
-end(2,(1,0),10).
-*%
+% spawning action
+action(train(ID), move_forward, Dep) :- start(ID, (X,Y), Dep, Dir), Dep > 0.
+action(train(ID), move_forward, 1) :- start(ID, (X,Y), 0, Dir).
 
 % fact format: position(train ID, coordinates, facing direction, timestep)
 % init position
-position(ID, (X,Y), Dir, Dep) :- start(ID, (X,Y), Dep, Dir).
+position(ID, (X,Y), Dir, Dep+1) :- start(ID, (X,Y), Dep, Dir), Dep >0.
+position(ID, (X,Y), Dir, 2) :- start(ID, (X,Y), 0, Dir).
 
 % curves
 curve(X,Y) :- cell((X,Y),72).
@@ -123,6 +109,7 @@ possible_movement(16386, w, move_forward).
 
 possible_movement(72, s, move_forward).
 possible_movement(72, w, move_forward).
+possible_movement(72, s, wait).
 
 possible_movement(2064, s, move_forward).
 possible_movement(2064, e, move_forward).
@@ -142,6 +129,7 @@ possible_movement(32872, s, move_forward).
 possible_movement(32872, s, move_left).
 possible_movement(32872, n, move_forward).
 possible_movement(32872, w, move_forward).
+possible_movement(32872, s, wait).
 
 possible_movement(3089, e, move_forward).
 possible_movement(3089, e, move_left).
@@ -248,9 +236,11 @@ possible_movement(6672, s, move_forward).
 possible_movement(TrackID, n, wait) :- cell(_, TrackID).
 possible_movement(TrackID, e, wait) :- cell(_, TrackID).
 possible_movement(TrackID, s, wait) :- cell(_, TrackID).
-possible_movement(TrackID, w, wait) :- cell(_, TrackID). 
+possible_movement(TrackID, w, wait) :- cell(_, TrackID).
 
-{action(train(ID), Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < E.
+% want a rule that choses exactly one of each possible movements per AS on the TrackID of the current position
+{action(train(ID), Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- 
+    position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < E.
 
 % minimize time
 %#minimize { T : end_time(ID, T) }.

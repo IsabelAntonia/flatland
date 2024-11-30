@@ -11,7 +11,13 @@ action(train(ID), move_forward, 1) :- start(ID, (X,Y), 0, Dir).
 position(ID, (X,Y), Dir, Dep+1) :- start(ID, (X,Y), Dep, Dir), Dep >0.
 position(ID, (X,Y), Dir, 2) :- start(ID, (X,Y), 0, Dir).
 
-% curves
+% latest arrival time of train
+max_end_time(ID,E) :- end(ID,(_,_),E).
+
+% arrival time of train
+end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
+
+%*% curves
 curve(X,Y) :- cell((X,Y),72).
 curve(X,Y) :- cell((X,Y),4608).
 curve(X,Y) :- cell((X,Y),16386).
@@ -21,15 +27,60 @@ curve(X,Y) :- cell((X,Y),2064).
 symmetrical_switch(X,Y) :- cell((X,Y),20994).
 symmetrical_switch(X,Y) :- cell((X,Y),16458).
 symmetrical_switch(X,Y) :- cell((X,Y),2136).
-symmetrical_switch(X,Y) :- cell((X,Y),6672).
+symmetrical_switch(X,Y) :- cell((X,Y),6672).*%
 
-% latest arrival time of train
-max_end_time(ID,E) :- end(ID,(_,_),E).
+% movement execution depending on action and direction 
+% format: movement(action, old_dir, coordinate change, new_dir)
+movement(move_left, n, (0,-1), w).
+movement(move_left, e, (-1,0), n).
+movement(move_left, s, (0,1), e).
+movement(move_left, w, (1,0), s).
 
-% arrival time of train
-end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
+movement(move_right, n, (0,1), e).
+movement(move_right, e, (1,0), s).
+movement(move_right, s, (0,-1), w).
+movement(move_right, w, (-1,0), n).
+
+movement(move_forward, n, (-1,0), n).
+movement(move_forward, e, (0,1), e).
+movement(move_forward, s, (1,0), s).
+movement(move_forward, w, (0,-1), w).
+
+% designates cells on which going in Dir makes you turn with a forward move
+% format: forced_turn(coordinates, old_dir, turn_dir)
+forced_turn((X,Y), s, move_left) :- cell((X,Y),72).
+forced_turn((X,Y), w, move_right) :- cell((X,Y),72).
+forced_turn((X,Y), n, move_left) :- cell((X,Y),4608).
+forced_turn((X,Y), e, move_right) :- cell((X,Y),4608).
+forced_turn((X,Y), w, move_left) :- cell((X,Y),16386).
+forced_turn((X,Y), n, move_right) :- cell((X,Y),16386).
+forced_turn((X,Y), e, move_left) :- cell((X,Y),2064).
+forced_turn((X,Y), s, move_right) :- cell((X,Y),2064).
+
+forced_turn((X,Y), w, move_left) :- cell((X,Y),20994).
+forced_turn((X,Y), e, move_right) :- cell((X,Y),20994).
+forced_turn((X,Y), e, move_left) :- cell((X,Y),2136).
+forced_turn((X,Y), w, move_right) :- cell((X,Y),2136).
+forced_turn((X,Y), s, move_left) :- cell((X,Y),16458).
+forced_turn((X,Y), n, move_right) :- cell((X,Y),16458).
+forced_turn((X,Y), n, move_left) :- cell((X,Y),6672).
+forced_turn((X,Y), s, move_right) :- cell((X,Y),6672).
+
+forced_turn((X,Y), n, move_left) :- cell((X,Y),5633).
+forced_turn((X,Y), n, move_right) :- cell((X,Y),17411).
+forced_turn((X,Y), e, move_left) :- cell((X,Y),34864).
+forced_turn((X,Y), e, move_right) :- cell((X,Y),37408).
+forced_turn((X,Y), s, move_left) :- cell((X,Y),1097).
+forced_turn((X,Y), s, move_right) :- cell((X,Y),3089).
+forced_turn((X,Y), w, move_left) :- cell((X,Y),49186).
+forced_turn((X,Y), w, move_right) :- cell((X,Y),32872).
 
 % generate new position after action
+position(ID, (X+DX,Y+DY), New_Dir, T) :- position(ID, (X,Y), Old_Dir, T-1), action(train(ID), M, T-1), movement(M, Old_Dir, (DX,DY), New_Dir), M != wait, not forced_turn((X,Y), Old_Dir,_).
+position(ID, (X+DX,Y+DY), New_Dir, T) :- position(ID, (X,Y), Old_Dir, T-1), action(train(ID), move_forward, T-1), movement(M, Old_Dir, (DX,DY), New_Dir), forced_turn((X,Y), Old_Dir, M).
+position(ID, (X,Y), Dir, T) :- position(ID, (X,Y), Dir, T-1), action(train(ID), wait, T-1).
+
+%*% generate new position after action
 % added cell((X,Y), _) <- cell@X,Y exists; to make sure we're not going out of bounds (shouldnt be needed in a viable environment)
 position(ID, (X,Y), n, T) :- action(train(ID), move_forward, T-1), position(ID, (X+1,Y), n, T-1), not curve(X+1,Y), not symmetrical_switch(X+1,Y), not cell((X+1,Y),5633), not cell((X+1,Y),17411), cell((X,Y), _).
 position(ID, (X,Y), n, T) :- action(train(ID), move_left, T-1), position(ID, (X+1,Y), e, T-1), cell((X,Y), _).
@@ -88,7 +139,8 @@ position(ID, (X,Y), e, T) :- action(train(ID), move_forward, T-1), position(ID, 
 % 34864
 position(ID, (X,Y), n, T) :- action(train(ID), move_forward, T-1), position(ID, (X+1,Y), e, T-1), cell((X+1,Y), 34864), cell((X,Y), _).
 % 5633
-position(ID, (X,Y), w, T) :- action(train(ID), move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 5633), cell((X,Y), _).
+position(ID, (X,Y), w, T) :- action(train(ID), move_forward, T-1), position(ID, (X,Y+1), n, T-1), cell((X,Y+1), 5633), cell((X,Y), _). *%
+
 
 % possible movements on any track type depending on direction
 % fact format: possible_movement(ID of track type, direction coming in, possible action).
@@ -243,7 +295,7 @@ possible_movement(TrackID, w, wait) :- cell(_, TrackID).
     position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < E.
 
 % minimize time
-%#minimize { T : end_time(ID, T) }.
+#minimize { T : end_time(ID, T) }.
 
 % shortest path only
 %:~ end_time(ID, T). [T@1]
@@ -258,7 +310,7 @@ possible_movement(TrackID, w, wait) :- cell(_, TrackID).
 :- end(ID, (X,Y), _), not position(ID, (X,Y), _, _).
 
 % trains have to be on time
-%:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
+:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
 
 
 #show action/3.

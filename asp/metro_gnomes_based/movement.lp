@@ -184,7 +184,7 @@ possible_movement(6672, n, move_forward).
 possible_movement(6672, s, move_forward).
 
 % wait as possible_movement on any track type
-%possible_movement(TrackID, n, wait) :- cell(_, TrackID).
-%possible_movement(TrackID, e, wait) :- cell(_, TrackID).
-%possible_movement(TrackID, s, wait) :- cell(_, TrackID).
-%possible_movement(TrackID, w, wait) :- cell(_, TrackID).
+possible_movement(TrackID, n, wait) :- cell((_,_), TrackID).
+possible_movement(TrackID, e, wait) :- cell((_,_), TrackID).
+possible_movement(TrackID, s, wait) :- cell((_,_), TrackID).
+possible_movement(TrackID, w, wait) :- cell((_,_), TrackID).

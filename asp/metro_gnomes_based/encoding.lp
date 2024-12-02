@@ -1,3 +1,13 @@
+% cell((0,0),16386).
+% cell((0,1),20994).
+% cell((0,2),4608).
+% cell((1,0),32800).
+% cell((1,1),32800).
+% cell((1,2),32800).
+% cell((2,0),72).
+% cell((2,1),2136).
+% cell((2,2),2064).
+
 % idle waiting
 action(train(ID), wait, 0) :- train(ID).
 action(train(ID), wait, 0..Dep-1) :- start(ID,(_,_),Dep,Dir), Dep > 0.
@@ -25,27 +35,20 @@ position(ID, (X+DX,Y+DY), New_Dir, T) :- position(ID, (X,Y), Old_Dir, T-1), acti
 position(ID, (X,Y), Dir, T) :- position(ID, (X,Y), Dir, T-1), action(train(ID), wait, T-1).
 
 % want a rule that choses exactly one of each possible movements per AS on the TrackID of the current position
-{action(train(ID), Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- 
-    position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < E.
+{action(train(ID), Action, T) : possible_movement(TrackID, Dir, Action)} = 1 :- 
+    position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < (E+1).
 
 % minimize time
 #minimize { T : end_time(ID, T) }.
 
-% shortest path only
-%:~ end_time(ID, T). [T@1]
-
 % trains may not swap
-:- position(ID1, (X1,Y1), _, T), position(ID2, (X2,Y2), _, T), position(ID1, (X2,Y2), _, T+1), position(ID2, (X1,Y1), _, T+1).
+:- position(ID1, (X1,Y1), _, T), position(ID2, (X2,Y2), _, T), position(ID1, (X2,Y2), _, T+1), position(ID2, (X1,Y1), _, T+1), ID1 != ID2.
 
 % no two trains on the same cell
 :- position(ID1, (X,Y), Dir1, T), position(ID2, (X,Y), Dir2, T), ID1 != ID2.
 
 % every train has to reach end
 :- end(ID, (X,Y), _), not position(ID, (X,Y), _, _).
-
-% trains have to be on time
-:- end(ID, (X,Y), Arr), position(ID, (X,Y), _, T), T > Arr.
-
 
 #show action/3.
 %#show position/4.

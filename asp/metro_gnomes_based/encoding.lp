@@ -14,6 +14,11 @@ position(ID, (X,Y), Dir, 2) :- start(ID, (X,Y), 0, Dir).
 % latest arrival time of train
 max_end_time(ID,E) :- end(ID,(_,_),E).
 
+% hardcoded train priorities
+prio(ID1,medium) :- train(ID1), ID1 = 1.
+prio(ID2,high):- train(ID2), ID2 = 2.
+prio(ID3, low) :- train(ID3), ID3 = 3.
+
 % arrival time of train
 end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
 
@@ -31,10 +36,18 @@ position(ID, (X,Y), Dir, T) :- position(ID, (X,Y), Dir, T-1), action(train(ID), 
 
 % want a rule that choses exactly one of each possible movements per AS on the TrackID of the current position
 {action(train(ID), Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- 
-                    position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < (E+1).                 
+    position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), not end(ID, (X,Y), _), max_end_time(ID,E), T < (E+1).    
 
-% minimize time
-%#minimize { T : end_time(ID, T) }.
+% LESS COMPLEX choice rule DID NOT result in performance increase                      
+%{action(train(ID), Action, T) : possible_movement(TrackID, Dir, Action)}=1 :- 
+%                    position(ID, (X,Y), Dir, T), cell((X,Y), TrackID), max_end_time(ID,E), T < (E+1).                                     
+
+% no more actions after reaching end for less complex choice rule
+%:- action(train(ID),_,T), position(ID, (X,Y), _, T), end(ID, (X,Y), _).
+
+% no more actions after deadline for less complex choice rule
+% this results in a lot more grounding and DOES NOT FINISH
+%:- action(train(ID),_,T), max_end_time(ID,E), T > E.
 
 % trains may not swap
 :- position(ID1, (X1,Y1), _, T), position(ID2, (X2,Y2), _, T), position(ID1, (X2,Y2), _, T+1), position(ID2, (X1,Y1), _, T+1), ID1 != ID2.
@@ -44,6 +57,11 @@ position(ID, (X,Y), Dir, T) :- position(ID, (X,Y), Dir, T-1), action(train(ID), 
 
 % every train has to reach end
 :- end(ID, (X,Y), _), not position(ID, (X,Y), _, _).
+
+% minimize end time according to priority
+#minimize { T3@1 : end_time(ID3, T3), prio(ID3, low)}.
+#minimize { T2@2 : end_time(ID2, T2), prio(ID2, medium)}.
+#minimize { T1@3 : end_time(ID1, T1), prio(ID1, high)}.
 
 #show action/3.
 %#show position/4.

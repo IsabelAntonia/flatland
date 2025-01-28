@@ -15,15 +15,23 @@ position(ID, (X,Y), Dir, 2) :- start(ID, (X,Y), 0, Dir).
 max_end_time(ID,E) :- end(ID,(_,_),E).
 
 % encoding for sacrifices
-prio(ID1,  3) :- train(ID1), ID1 = 1.
-prio(ID2, 2):- train(ID2), ID2 = 2.
-prio(ID3, 2) :- train(ID3), ID3 = 3.
-prio(ID4, 2) :- train(ID4), ID4 = 4.
+% prio(ID1,  3) :- train(ID1), ID1 = 1.
+% prio(ID2, 2):- train(ID2), ID2 = 2.
+% prio(ID3, 2) :- train(ID3), ID3 = 3.
+% prio(ID4, 2) :- train(ID4), ID4 = 4.
 
 % encoding for situational / global
-prio(ID1,  3) :- train(ID1), ID1 = 1.
-prio(ID2, 2):- train(ID2), ID2 = 2.
-prio(ID3, 1) :- train(ID3), ID3 = 3.
+% prio(ID1,  3) :- train(ID1), ID1 = 1.
+% prio(ID2, 2):- train(ID2), ID2 = 2.
+% prio(ID3, 1) :- train(ID3), ID3 = 3.
+
+% modulo encoding for evenly distributed priority assignment
+% priority = weight for cost function
+% priorityMap(0,3). % high
+% priorityMap(1,2). % medium
+% priorityMap(2,1). % low
+
+% prio(ID, P) :- train(ID), R = ID \ 3, priorityMap(R,P).
 
 % arrival time of train
 end_time(ID, T) :- position(ID, (X,Y), _, T), end(ID, (X,Y), _).
@@ -70,7 +78,8 @@ position(ID, (X,Y), Dir, T) :- position(ID, (X,Y), Dir, T-1), action(train(ID), 
 % #minimize { T2@2 : end_time(ID2, T2), prio(ID2, medium)}.
 % #minimize { T1@3 : end_time(ID1, T1), prio(ID1, high)}.
 
-#show action/3.
-#show end_time/2.
+#show prio/2.
+%#show action/3.
+%#show end_time/2.
 %#show position/4.
 %#show possible_movement/3.

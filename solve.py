@@ -6,6 +6,8 @@ import pickle
 import json
 from argparse import ArgumentParser, Namespace
 
+import random
+
 # custom modules
 from asp import params
 from modules.api import FlatlandPlan, FlatlandReplan
@@ -58,6 +60,18 @@ class MalfunctionManager():
 class SimulationManager():
     def __init__(self,env,primary,secondary=None):
         self.env = env
+
+        # TEMPORARY INSERTION
+        train_ids = list(range(len(self.env.agents)))
+        random_priorities = {tid: random.choice([1, 2, 3]) for tid in train_ids}
+        print("Generated random priorities:", random_priorities)
+        random_prio_file = "random_prio.lp"
+        # TEMPORARY INSERTION ends
+        with open(random_prio_file, "w") as f:
+            for tid, prio in random_priorities.items():
+                f.write(f"prio({tid},{prio}).\n")
+
+
         self.primary = primary
         if secondary is None:
             self.secondary = primary 
@@ -68,7 +82,10 @@ class SimulationManager():
         """ create initial list of actions """
         # pass env, primary
         app = FlatlandPlan(self.env, None)
-        clingo_main(app, self.primary)
+        # TEMPORARY INSERTION for generating priorities
+        primary_with_priorities = ["--opt-mode=optN"] + self.primary + ["random_prio.lp"] # flag is to find optimal model
+        #primary_with_priorities = self.primary + ["random_prio.lp"]
+        clingo_main(app, primary_with_priorities)
         return(app.action_list)
 
     def provide_context(self, actions, timestep, malfunctions) -> str:

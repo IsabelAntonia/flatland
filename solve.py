@@ -21,6 +21,7 @@ from clingo.application import Application, clingo_main
 from flatland.utils.rendertools import RenderTool
 import imageio.v2 as imageio
 
+RANDOM_PRIO = False
 
 class MalfunctionManager():
     def __init__(self, num_agents):
@@ -61,16 +62,14 @@ class SimulationManager():
     def __init__(self,env,primary,secondary=None):
         self.env = env
 
-        # TEMPORARY INSERTION
-        train_ids = list(range(len(self.env.agents)))
-        random_priorities = {tid: random.choice([1, 2, 3]) for tid in train_ids}
-        print("Generated random priorities:", random_priorities)
-        random_prio_file = "random_prio.lp"
-        # TEMPORARY INSERTION ends
-        with open(random_prio_file, "w") as f:
-            for tid, prio in random_priorities.items():
-                f.write(f"prio({tid},{prio}).\n")
-
+        if RANDOM_PRIO:
+            train_ids = list(range(len(self.env.agents)))
+            random_priorities = {tid: random.choice([1, 2, 3]) for tid in train_ids}
+            print("Generated random priorities:", random_priorities)
+            random_prio_file = "random_prio.lp"
+            with open(random_prio_file, "w") as f:
+                for tid, prio in random_priorities.items():
+                    f.write(f"prio({tid},{prio}).\n")
 
         self.primary = primary
         if secondary is None:
@@ -82,10 +81,11 @@ class SimulationManager():
         """ create initial list of actions """
         # pass env, primary
         app = FlatlandPlan(self.env, None)
-        # TEMPORARY INSERTION for generating priorities
-        primary_with_priorities = ["--opt-mode=optN"] + self.primary + ["random_prio.lp"] # flag is to find optimal model
-        #primary_with_priorities = self.primary + ["random_prio.lp"]
-        clingo_main(app, primary_with_priorities)
+        if RANDOM_PRIO:
+            facts = ["--opt-mode=optN"] + self.primary + ["random_prio.lp"] # flag is to find optimal model
+        else:
+            facts = ["--opt-mode=optN"] + self.primary
+        clingo_main(app, facts)
         return(app.action_list)
 
     def provide_context(self, actions, timestep, malfunctions) -> str:

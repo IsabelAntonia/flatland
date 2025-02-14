@@ -14,11 +14,23 @@ position(ID, (X,Y), Dir, 2) :- start(ID, (X,Y), 0, Dir).
 % latest arrival time of train
 max_end_time(ID,E) :- end(ID,(_,_),E).
 
+% priority based on deadline and distance
+distance(ID,D) :- train(ID), start(ID, (X1,Y1), _, _), end(ID, (X2,Y2), _), D = |X2 - X1| + |Y2 - Y1|.
+
+time_left(ID,T) :- train(ID), start(ID, (_,_), X, _), end(ID, (_,_), Y), T = Y - X.
+
+prio(ID, P) :- train(ID), distance(ID,D), time_left(ID,T), P = (D * (100000/T))/100.
+% other encoding for sacrifices 
+% prio(ID1,  3) :- train(ID1), ID1 = 0.
+% prio(ID2, 1):- train(ID2), ID2 = 1.
+% prio(ID3, 1) :- train(ID3), ID3 = 2.
+% prio(ID4, 1) :- train(ID4), ID4 = 3.
+
 % encoding for sacrifices
-prio(ID1,  3) :- train(ID1), ID1 = 0.
-prio(ID2, 2):- train(ID2), ID2 = 1.
-prio(ID3, 2) :- train(ID3), ID3 = 2.
-prio(ID4, 2) :- train(ID4), ID4 = 3.
+% prio(ID1,  3) :- train(ID1), ID1 = 0.
+% prio(ID2, 2):- train(ID2), ID2 = 1.
+% prio(ID3, 2) :- train(ID3), ID3 = 2.
+% prio(ID4, 2) :- train(ID4), ID4 = 3.
 
 % encoding for situational / global
 % prio(ID1,  3) :- train(ID1), ID1 = 1.
@@ -78,7 +90,9 @@ position(ID, (X,Y), Dir, T) :- position(ID, (X,Y), Dir, T-1), action(train(ID), 
 % #minimize { T2@2 : end_time(ID2, T2), prio(ID2, medium)}.
 % #minimize { T1@3 : end_time(ID1, T1), prio(ID1, high)}.
 
-%#show prio/2.
+%#show time_left/2.
+%#show distance/2.
+#show prio/2.
 #show action/3.
 %#show end_time/2.
 %#show position/4.
